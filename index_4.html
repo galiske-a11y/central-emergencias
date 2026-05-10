@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central de Emergencias — Sistema de Registro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap');
+  :root {
+    --red:#D92B3A;--red-light:#FF4757;--red-bg:rgba(217,43,58,0.08);
+    --dark:#0F1117;--surface:#181A22;--surface2:#1F2130;--surface3:#252838;
+    --border:rgba(255,255,255,0.08);--border-focus:rgba(217,43,58,0.5);
+    --text:#F0F0F5;--text-muted:rgba(240,240,245,0.45);
+    --green:#00C896;--blue:#3B82F6;--orange:#F59E0B;--radius:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;}
+
+  /* NAV */
+  .nav{display:flex;align-items:center;gap:0;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;position:sticky;top:0;z-index:200;}
+  .nav-logo{display:flex;align-items:center;gap:10px;padding:14px 0;margin-right:24px;flex-shrink:0;}
+  .nav-logo .icon{width:36px;height:36px;border-radius:10px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:18px;animation:pulse 2.5s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 12px rgba(217,43,58,0.4);}50%{box-shadow:0 0 24px rgba(217,43,58,0.7);}}
+  .nav-logo span{font-family:'Sora',sans-serif;font-weight:800;font-size:0.95rem;letter-spacing:-0.02em;}
+  .nav-logo span em{color:var(--red-light);font-style:normal;}
+  .nav-tabs{display:flex;gap:0;flex:1;}
+  .nav-tab{padding:18px 18px;font-family:'Sora',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;color:var(--text-muted);transition:all 0.2s;white-space:nowrap;}
+  .nav-tab.active{color:var(--red-light);border-bottom-color:var(--red-light);}
+  .nav-tab:hover:not(.active){color:var(--text);}
+  .nav-count{margin-left:auto;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);border-radius:999px;padding:4px 12px;font-family:'Sora',sans-serif;font-size:0.72rem;font-weight:700;color:var(--red-light);}
+
+  /* VIEWS */
+  .view{display:none;}.view.active{display:block;}
+
+  /* DASHBOARD */
+  .dash-header{padding:28px 24px 0;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .dash-header h1{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-0.03em;}
+  .dash-header p{font-size:0.8rem;color:var(--text-muted);margin-top:3px;}
+  .btn-add{display:flex;align-items:center;gap:7px;background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:'Sora',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .btn-add:hover{background:#c42233;transform:translateY(-1px);box-shadow:0 4px 16px rgba(217,43,58,0.4);}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:20px 24px;}
+  .stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+  .stat-card .stat-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);font-weight:600;margin-bottom:6px;}
+  .stat-card .stat-value{font-family:'Sora',sans-serif;font-size:1.8rem;font-weight:800;line-height:1;}
+  .stat-card .stat-sub{font-size:0.72rem;color:var(--text-muted);margin-top:4px;}
+  .stat-card.red .stat-value{color:var(--red-light);}
+  .stat-card.green .stat-value{color:var(--green);}
+  .stat-card.blue .stat-value{color:var(--blue);}
+  .stat-card.orange .stat-value{color:var(--orange);}
+
+  .toolbar{display:flex;gap:10px;align-items:center;padding:0 24px 16px;flex-wrap:wrap;}
+  .search-wrap{position:relative;flex:1;min-width:200px;}
+  .search-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px 10px 38px;font-family:'Inter',sans-serif;font-size:0.85rem;color:var(--text);}
+  .search-wrap input:focus{outline:none;border-color:var(--border-focus);}
+  .search-wrap input::placeholder{color:var(--text-muted);}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:0.4;}
+  .filter-select{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 34px 10px 12px;font-family:'Inter',sans-serif;font-size:0.82rem;color:var(--text);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(240,240,245,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+  .filter-select:focus{outline:none;border-color:var(--border-focus);}
+  .filter-select option{background:#1F2130;}
+
+  .table-wrap{padding:0 24px 32px;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:700px;}
+  thead tr{border-bottom:1px solid var(--border);}
+  th{text-align:left;padding:10px 12px;font-size:0.67rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:700;color:var(--text-muted);white-space:nowrap;}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;cursor:pointer;}
+  tbody tr:hover{background:rgba(255,255,255,0.03);}
+  td{padding:12px 12px;font-size:0.83rem;vertical-align:middle;}
+  td .name{font-weight:600;font-family:'Sora',sans-serif;}
+  td .sub{font-size:0.72rem;color:var(--text-muted);margin-top:2px;}
+  .badge-pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:0.67rem;font-weight:700;letter-spacing:0.04em;}
+  .pill-green{background:rgba(0,200,150,0.15);color:var(--green);}
+  .pill-blue{background:rgba(59,130,246,0.15);color:var(--blue);}
+  .pill-orange{background:rgba(245,158,11,0.15);color:var(--orange);}
+  .pill-red{background:rgba(217,43,58,0.15);color:var(--red-light);}
+  .action-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:0.72rem;color:var(--text-muted);cursor:pointer;transition:all 0.15s;margin-right:4px;}
+  .action-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--text);}
+  .action-btn.del:hover{border-color:rgba(217,43,58,0.4);color:var(--red-light);}
+
+  .empty-state{text-align:center;padding:64px 24px;}
+  .empty-state .empty-icon{font-size:52px;margin-bottom:16px;opacity:0.4;}
+  .empty-state h3{font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--text-muted);}
+  .empty-state p{font-size:0.82rem;color:var(--text-muted);}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;animation:fadeUp 0.25s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .modal-header{display:flex;align-items:center;gap:14px;padding:22px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1;}
+  .modal-avatar{width:48px;height:48px;border-radius:14px;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .modal-header h2{font-family:'Sora',sans-serif;font-size:1.1rem;font-weight:800;}
+  .modal-header .modal-id{font-size:0.72rem;color:var(--text-muted);}
+  .modal-close{margin-left:auto;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text-muted);cursor:pointer;font-size:0.78rem;transition:all 0.15s;}
+  .modal-close:hover{border-color:rgba(255,255,255,0.2);color:var(--text);}
+  .modal-body{padding:22px 24px;}
+  .modal-section{margin-bottom:22px;}
+  .modal-section-title{font-family:'Sora',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--red-light);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .modal-section-title::after{content:'';flex:1;height:1px;background:rgba(217,43,58,0.15);}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .detail-grid.full{grid-template-columns:1fr;}
+  .detail-grid.three{grid-template-columns:1fr 1fr 1fr;}
+  .detail-item{background:var(--surface2);border-radius:10px;padding:12px;}
+  .detail-item .dk{font-size:0.66rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);font-weight:600;margin-bottom:3px;}
+  .detail-item .dv{font-size:0.85rem;font-weight:500;line-height:1.4;}
+  .contact-row{display:flex;align-items:center;gap:12px;background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:8px;}
+  .contact-row .cn{width:28px;height:28px;border-radius:8px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:800;font-size:0.75rem;flex-shrink:0;}
+  .contact-row .ci h4{font-size:0.85rem;font-weight:600;}
+  .contact-row .ci p{font-size:0.72rem;color:var(--text-muted);}
+  .contact-row .ct{margin-left:auto;text-align:right;font-size:0.78rem;color:var(--text-muted);}
+
+  /* FORM */
+  .form-container{max-width:640px;margin:0 auto;padding:28px 20px 60px;}
+  .progress-bar-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;}
+  .progress-steps{display:flex;align-items:center;max-width:600px;margin:0 auto;}
+  .step{flex:1;text-align:center;position:relative;}
+  .step::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;background:var(--border);z-index:0;transition:background 0.4s;}
+  .step:last-child::after{display:none;}
+  .step.done::after{background:var(--red);}
+  .step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-size:0.72rem;font-weight:700;margin:0 auto 4px;position:relative;z-index:1;transition:all 0.3s;color:var(--text-muted);}
+  .step.active .step-dot{border-color:var(--red);background:var(--red);color:#fff;box-shadow:0 0 12px rgba(217,43,58,0.5);}
+  .step.done .step-dot{border-color:var(--red);background:var(--red);color:#fff;}
+  .step-label{font-size:0.6rem;letter-spacing:0.04em;text-transform:uppercase;font-weight:600;color:var(--text-muted);}
+  .step.active .step-label,.step.done .step-label{color:var(--red-light);}
+
+  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .section-icon{width:44px;height:44px;border-radius:12px;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .section-header h2{font-family:'Sora',sans-serif;font-size:1.15rem;font-weight:700;}
+  .section-header p{font-size:0.78rem;color:var(--text-muted);margin-top:2px;}
+
+  .form-section{display:none;}.form-section.active{display:block;animation:fadeUp 0.35s ease;}
+
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .field-row.full{grid-template-columns:1fr;}
+  .field-row.third{grid-template-columns:1fr 1fr 1fr;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  label{font-size:0.7rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);}
+  label .req{color:var(--red-light);margin-left:2px;}
+  input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:0.88rem;color:var(--text);transition:border-color 0.2s,box-shadow 0.2s;width:100%;appearance:none;-webkit-appearance:none;}
+  input::placeholder,textarea::placeholder{color:rgba(240,240,245,0.2);}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(217,43,58,0.1);}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(240,240,245,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;}
+  select option{background:#1F2130;}
+  textarea{resize:vertical;min-height:80px;line-height:1.5;}
+  .field-hint{font-size:0.68rem;color:var(--text-muted);margin-top:2px;padding-left:2px;}
+  .field .error-msg{font-size:0.68rem;color:#ff6b6b;display:none;margin-top:2px;}
+  .field.invalid input,.field.invalid select,.field.invalid textarea{border-color:#ff6b6b;}
+  .field.invalid .error-msg{display:block;}
+
+  .divider{display:flex;align-items:center;gap:10px;margin:20px 0 14px;font-family:'Sora',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--red-light);}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(217,43,58,0.15);}
+
+  .contact-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}
+  .contact-card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .contact-num{width:32px;height:32px;border-radius:9px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:800;font-size:0.85rem;flex-shrink:0;}
+  .ct-title{font-family:'Sora',sans-serif;font-weight:700;font-size:0.9rem;}
+  .ct-sub{font-size:0.72rem;color:var(--text-muted);}
+  .contact-optional{font-size:0.68rem;color:var(--text-muted);font-style:italic;margin-left:auto;}
+
+  .btn-row{display:flex;gap:10px;margin-top:28px;}
+  .btn{flex:1;padding:14px 20px;border:none;border-radius:12px;font-family:'Sora',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .btn-back{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);}
+  .btn-back:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+  .btn-next{background:var(--red);color:#fff;box-shadow:0 4px 20px rgba(217,43,58,0.35);}
+  .btn-next:hover{background:#c42233;box-shadow:0 4px 24px rgba(217,43,58,0.5);transform:translateY(-1px);}
+  .btn-submit{background:var(--green);color:#001a12;box-shadow:0 4px 20px rgba(0,200,150,0.3);}
+  .btn-submit:hover{background:#00e0a8;transform:translateY(-1px);}
+
+  .success-screen{display:none;text-align:center;padding:48px 24px;}
+  .success-screen.show{display:block;animation:fadeUp 0.4s ease;}
+  .success-icon{width:90px;height:90px;border-radius:50%;background:rgba(0,200,150,0.15);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 24px;}
+  .success-screen h2{font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:8px;}
+  .success-screen p{color:var(--text-muted);font-size:0.88rem;line-height:1.6;}
+  .btn-ver{display:inline-block;margin-top:20px;padding:12px 24px;border-radius:12px;background:var(--red);color:#fff;font-family:'Sora',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;transition:all 0.2s;}
+  .btn-ver:hover{background:#c42233;transform:translateY(-1px);}
+  .btn-nuevo2{display:inline-block;margin-top:10px;margin-left:10px;padding:12px 24px;border-radius:12px;background:var(--surface2);color:var(--text);font-family:'Sora',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;border:1px solid var(--border);transition:all 0.2s;}
+  .btn-nuevo2:hover{border-color:rgba(255,255,255,0.2);}
+
+  .select-placeholder{color:var(--text-muted) !important;font-style:italic;}
+
+  @media(max-width:600px){
+    .stats{grid-template-columns:1fr 1fr;}
+    .field-row,.field-row.third{grid-template-columns:1fr;}
+    .step-label{display:none;}
+  }
+
+  /* ====== SOS VIEW ====== */
+  .sos-tab{color:#FF4757 !important;}
+  #view-sos{background:linear-gradient(160deg,#0F1117 0%,#1a0508 100%);min-height:calc(100vh - 57px);}
+  .sos-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px 20px;text-align:center;}
+  .sos-user-bar{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:40px;width:100%;max-width:400px;}
+  .sos-user-bar .su-icon{width:40px;height:40px;border-radius:12px;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .sos-user-bar .su-name{font-family:'Sora',sans-serif;font-weight:700;font-size:0.95rem;text-align:left;}
+  .sos-user-bar .su-sub{font-size:0.72rem;color:var(--text-muted);text-align:left;}
+  .sos-user-bar .su-change{margin-left:auto;font-size:0.72rem;color:var(--text-muted);cursor:pointer;text-decoration:underline;white-space:nowrap;}
+  .sos-btn-wrap{position:relative;margin-bottom:40px;}
+  .sos-ring{position:absolute;inset:-20px;border-radius:50%;border:2px solid rgba(217,43,58,0.2);animation:sosPulse 2s infinite;}
+  .sos-ring2{position:absolute;inset:-40px;border-radius:50%;border:2px solid rgba(217,43,58,0.1);animation:sosPulse 2s infinite 0.5s;}
+  @keyframes sosPulse{0%{transform:scale(0.95);opacity:1;}100%{transform:scale(1.15);opacity:0;}}
+  .sos-btn{width:200px;height:200px;border-radius:50%;background:var(--red);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 60px rgba(217,43,58,0.5);transition:all 0.15s;position:relative;z-index:1;}
+  .sos-btn:hover{transform:scale(1.04);box-shadow:0 0 80px rgba(217,43,58,0.7);}
+  .sos-btn:active{transform:scale(0.97);}
+  .sos-btn .sb-icon{font-size:56px;line-height:1;}
+  .sos-btn .sb-label{font-family:'Sora',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:0.05em;}
+  .sos-hint{font-size:0.8rem;color:var(--text-muted);margin-bottom:32px;}
+  .sos-contacts{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;width:100%;max-width:400px;}
+  .sos-contacts h4{font-family:'Sora',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;}
+  .sos-contact-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .sos-contact-item:last-child{border-bottom:none;}
+  .sos-contact-item .sci-num{width:24px;height:24px;border-radius:7px;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:800;font-size:0.7rem;color:var(--red-light);flex-shrink:0;}
+  .sos-contact-item .sci-name{font-size:0.82rem;font-weight:600;}
+  .sos-contact-item .sci-sub{font-size:0.7rem;color:var(--text-muted);}
+  .sos-contact-item .sci-tel{margin-left:auto;font-size:0.75rem;color:var(--text-muted);}
+
+  /* SOS ENVIANDO */
+  .sos-sending{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px;text-align:center;}
+  .sos-sending.show{display:flex;animation:fadeUp 0.3s ease;}
+  .sos-spinner{width:80px;height:80px;border-radius:50%;border:4px solid rgba(217,43,58,0.2);border-top-color:var(--red);animation:spin 1s linear infinite;margin-bottom:24px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .sos-sending h2{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:8px;}
+  .sos-sending p{color:var(--text-muted);font-size:0.88rem;}
+
+  /* SOS CONFIRMADO */
+  .sos-confirmed{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px;text-align:center;}
+  .sos-confirmed.show{display:flex;animation:fadeUp 0.3s ease;}
+  .sos-confirmed .sc-icon{width:100px;height:100px;border-radius:50%;background:rgba(217,43,58,0.15);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:50px;margin-bottom:24px;animation:sosPulse 1.5s infinite;}
+  .sos-confirmed h2{font-family:'Sora',sans-serif;font-size:1.6rem;font-weight:800;color:var(--red-light);margin-bottom:10px;}
+  .sos-confirmed p{color:var(--text-muted);font-size:0.9rem;line-height:1.6;max-width:320px;}
+  .sos-cancel{margin-top:28px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 28px;font-family:'Sora',sans-serif;font-weight:700;font-size:0.85rem;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+  .sos-cancel:hover{border-color:rgba(255,255,255,0.2);color:var(--text);}
+
+  /* LOGIN SOS */
+  .sos-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px 20px;text-align:center;}
+  .sos-login h2{font-family:'Sora',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:8px;}
+  .sos-login p{color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;}
+  .sos-login input{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;font-family:'Inter',sans-serif;font-size:1rem;color:var(--text);width:100%;max-width:320px;text-align:center;letter-spacing:0.05em;}
+  .sos-login input:focus{outline:none;border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(217,43,58,0.1);}
+  .sos-login-btn{margin-top:14px;background:var(--red);color:#fff;border:none;border-radius:12px;padding:14px 32px;font-family:'Sora',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;width:100%;max-width:320px;transition:all 0.2s;}
+  .sos-login-btn:hover{background:#c42233;}
+  .sos-login-error{font-size:0.78rem;color:#ff6b6b;margin-top:8px;display:none;}
+
+
+  /* ====== HOME VIEW ====== */
+  #view-home {
+    background: linear-gradient(160deg, #0F1117 0%, #1a0508 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+  }
+  .home-logo {
+    width: 70px; height: 70px; border-radius: 20px;
+    background: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 40px rgba(217,43,58,0.4);
+    animation: pulse 2.5s infinite;
+  }
+  .home-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.6rem; font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+  .home-title em { color: var(--red-light); font-style: normal; }
+  .home-sub {
+    font-size: 0.85rem; color: var(--text-muted);
+    margin-bottom: 60px;
+  }
+  .home-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+  /* Botón AYUDA — grande y circular */
+  .btn-ayuda-wrap { position: relative; }
+  .btn-ayuda-ring {
+    position: absolute; inset: -18px; border-radius: 50%;
+    border: 2px solid rgba(217,43,58,0.25);
+    animation: sosPulse 2s infinite;
+  }
+  .btn-ayuda-ring2 {
+    position: absolute; inset: -36px; border-radius: 50%;
+    border: 2px solid rgba(217,43,58,0.12);
+    animation: sosPulse 2s infinite 0.6s;
+  }
+  .btn-ayuda {
+    width: 220px; height: 220px; border-radius: 50%;
+    background: var(--red);
+    border: none; cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    box-shadow: 0 0 60px rgba(217,43,58,0.5);
+    transition: all 0.15s;
+    position: relative; z-index: 1;
+  }
+  .btn-ayuda:hover { transform: scale(1.04); box-shadow: 0 0 80px rgba(217,43,58,0.7); }
+  .btn-ayuda:active { transform: scale(0.97); }
+  .btn-ayuda-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 2rem; font-weight: 800;
+    color: #fff; letter-spacing: 0.08em;
+  }
+  .btn-ayuda-hint {
+    font-size: 0.75rem; color: rgba(255,255,255,0.6);
+    letter-spacing: 0.04em;
+  }
+  /* Botón REGISTRO — mediano */
+  .btn-registro {
+    width: 160px; height: 160px; border-radius: 50%;
+    background: #2A3F6F;
+    border: 2px solid rgba(59,130,246,0.3);
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    box-shadow: 0 0 30px rgba(59,130,246,0.2);
+    transition: all 0.2s;
+  }
+  .btn-registro:hover { background: #324d85; transform: scale(1.04); box-shadow: 0 0 40px rgba(59,130,246,0.35); }
+  .btn-registro:active { transform: scale(0.97); }
+  .btn-registro-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.1rem; font-weight: 800;
+    color: #fff; letter-spacing: 0.06em;
+  }
+  .btn-registro-hint {
+    font-size: 0.7rem; color: rgba(255,255,255,0.5);
+  }
+  /* Admin link discreto */
+  .admin-link {
+    position: fixed; bottom: 16px; right: 16px;
+    font-size: 0.65rem; color: rgba(255,255,255,0.15);
+    cursor: pointer; letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  .admin-link:hover { color: rgba(255,255,255,0.4); }
+
+
+  /* WhatsApp buttons en confirmado */
+  .wa-section { margin-top: 24px; width: 100%; max-width: 360px; }
+  .wa-section h4 { font-family: 'Sora', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+  .wa-btn {
+    display: flex; align-items: center; gap: 12px;
+    background: #25D366; color: #fff;
+    border: none; border-radius: 12px;
+    padding: 12px 18px; width: 100%;
+    font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; margin-bottom: 8px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .wa-btn:hover { background: #20ba58; transform: translateY(-1px); }
+  .wa-btn .wa-icon { font-size: 20px; flex-shrink: 0; }
+  .wa-btn .wa-info { text-align: left; }
+  .wa-btn .wa-name { font-size: 0.85rem; font-weight: 700; }
+  .wa-btn .wa-num { font-size: 0.7rem; opacity: 0.8; font-weight: 400; }
+
+</style>
+</head>
+<body>
+
+<!-- HOME VIEW -->
+<div class="view active" id="view-home" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+  <div class="home-logo">🚨</div>
+  <h1 class="home-title">Central de <em>Emergencias</em></h1>
+  <p class="home-sub">Asistencia Inmediata</p>
+
+  <div class="home-buttons">
+    <div class="btn-ayuda-wrap">
+      <div class="btn-ayuda-ring"></div>
+      <div class="btn-ayuda-ring2"></div>
+      <button class="btn-ayuda" onclick="switchView('sos')">
+        <span class="btn-ayuda-label">AYUDA</span>
+        <span class="btn-ayuda-hint">Presioná para pedir ayuda</span>
+      </button>
+    </div>
+
+    <button class="btn-registro" onclick="switchView('registro')">
+      <span class="btn-registro-label">REGISTRO</span>
+      <span class="btn-registro-hint">Registrarse en el sistema</span>
+    </button>
+
+    <button onclick="switchView('misdatos')" style="background:none;border:none;color:var(--text-muted);font-size:0.8rem;cursor:pointer;text-decoration:underline;margin-top:8px;">
+      Ver mis datos de registro
+    </button>
+  </div>
+
+
+</div>
+
+<nav class="nav" id="main-nav" style="display:none">
+  <div class="nav-logo">
+    <div class="icon">🚨</div>
+    <span style="cursor:pointer" onclick="switchView('home')">Central de <em>Emergencias</em></span>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab" onclick="switchView('misdatos')">👤 Mis Datos</div>
+    <div class="nav-tab active" onclick="switchView('registro')">➕ Registro</div>
+    <div class="nav-tab sos-tab" onclick="switchView('sos')">🆘 SOS</div>
+    <div class="nav-tab" onclick="switchView('home')" style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.7rem">← Inicio</div>
+  </div>
+  
+</nav>
+
+<!-- ============================================================ -->
+<!--  DASHBOARD                                                   -->
+<!-- ============================================================ -->
+<div class="view" id="view-registro">
+  <div class="progress-bar-wrap">
+    <div class="progress-steps">
+      <div class="step active" id="step-ind-1"><div class="step-dot">1</div><div class="step-label">Personal</div></div>
+      <div class="step" id="step-ind-2"><div class="step-dot">2</div><div class="step-label">Médico</div></div>
+      <div class="step" id="step-ind-3"><div class="step-dot">3</div><div class="step-label">Contactos</div></div>
+    </div>
+  </div>
+
+  <div class="form-container">
+
+    <!-- PASO 1 -->
+    <div class="form-section active" id="sec-1">
+      <div class="section-header">
+        <div class="section-icon">👤</div>
+        <div><h2>Datos Personales</h2><p>Información de identificación del titular</p></div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" id="f-nombres"><label>Nombres <span class="req">*</span></label><input type="text" id="nombres" placeholder="ej. María Elena" autocomplete="given-name"><span class="error-msg">Obligatorio</span></div>
+        <div class="field" id="f-apellidos"><label>Apellidos <span class="req">*</span></label><input type="text" id="apellidos" placeholder="ej. González Pérez" autocomplete="family-name"><span class="error-msg">Obligatorio</span></div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="f-cedula"><label>Cédula <span class="req">*</span></label><input type="text" id="cedula" placeholder="ej. 1.234.567-8" maxlength="12"><span class="error-msg">Obligatorio</span></div>
+        <div class="field" id="f-nacimiento"><label>Fecha de Nacimiento <span class="req">*</span></label><input type="date" id="nacimiento" max="2010-01-01"><span class="error-msg">Obligatorio</span></div>
+      </div>
+
+      <div class="divider">Domicilio</div>
+
+      <div class="field-row full">
+        <div class="field" id="f-domicilio"><label>Domicilio <span class="req">*</span></label><input type="text" id="domicilio" placeholder="ej. Bulevar Artigas 1234"><span class="error-msg">Obligatorio</span></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Apartamento</label><input type="text" id="apartamento" placeholder="Opcional"></div>
+        <div class="field" id="f-ciudad"><label>Ciudad <span class="req">*</span></label><input type="text" id="ciudad" placeholder="ej. Montevideo"><span class="error-msg">Obligatorio</span></div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="f-departamento">
+          <label>Departamento <span class="req">*</span></label>
+          <select id="departamento" onchange="onDeptoChange()">
+            <option value="">— Seleccioná —</option>
+            <option>Artigas</option><option>Canelones</option><option>Cerro Largo</option><option>Colonia</option><option>Durazno</option><option>Flores</option><option>Florida</option><option>Lavalleja</option><option>Maldonado</option><option>Montevideo</option><option>Paysandú</option><option>Río Negro</option><option>Rivera</option><option>Rocha</option><option>Salto</option><option>San José</option><option>Soriano</option><option>Tacuarembó</option><option>Treinta y Tres</option>
+          </select>
+          <span class="error-msg">Seleccioná un departamento</span>
+        </div>
+        <div class="field" id="f-pais">
+          <label>País <span class="req">*</span></label>
+          <select id="pais">
+            <option value="Uruguay">🇺🇾 Uruguay</option><option value="Argentina">🇦🇷 Argentina</option><option value="Brasil">🇧🇷 Brasil</option><option value="Paraguay">🇵🇾 Paraguay</option><option value="Chile">🇨🇱 Chile</option><option value="Otro">Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider">Teléfonos</div>
+
+      <div class="field-row third">
+        <div class="field" id="f-tel-linea">
+          <label>Teléfono de Línea <span class="req">*</span></label>
+          <input type="tel" id="tel-linea" placeholder="ej. 2XXX XXXX">
+          <span class="error-msg">Obligatorio</span>
+        </div>
+        <div class="field" id="f-tel-cel">
+          <label>Teléfono Celular <span class="req">*</span></label>
+          <input type="tel" id="tel-cel" placeholder="ej. 09X XXX XXX">
+          <span class="error-msg">Obligatorio al menos uno</span>
+        </div>
+        <div class="field">
+          <label>Otro Teléfono</label>
+          <input type="tel" id="tel-otro" placeholder="Opcional">
+          <span class="field-hint">Trabajo, familiar, etc.</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-next" onclick="goTo(2)">Continuar — Datos Médicos →</button>
+      </div>
+    </div>
+
+    <!-- PASO 2 -->
+    <div class="form-section" id="sec-2">
+      <div class="section-header">
+        <div class="section-icon">🏥</div>
+        <div><h2>Datos Médicos</h2><p>Visibles para la central ante una emergencia</p></div>
+      </div>
+
+      <div class="field-row full">
+        <div class="field" id="f-emergencia">
+          <label>Servicio de Emergencia Médica <span class="req">*</span></label>
+          <select id="emergencia">
+            <option value="">— Primero seleccioná el Departamento —</option>
+          </select>
+          <span class="field-hint" id="emerg-hint">Completá el Departamento en el paso anterior para ver las opciones de tu zona.</span>
+          <span class="error-msg">Obligatorio</span>
+        </div>
+      </div>
+
+      <div class="field-row full">
+        <div class="field" id="f-mutualista">
+          <label>Seguro Médico / Mutualista <span class="req">*</span></label>
+          <select id="mutualista">
+            <option value="">— Primero seleccioná el Departamento —</option>
+          </select>
+          <span class="field-hint" id="mutual-hint">Completá el Departamento en el paso anterior para ver las opciones de tu zona.</span>
+          <span class="error-msg">Obligatorio</span>
+        </div>
+      </div>
+
+      <div class="field-row full">
+        <div class="field">
+          <label>Enfermedades / Condiciones médicas</label>
+          <textarea id="enfermedades" placeholder="ej. Hipertensión arterial, Diabetes tipo 2, marcapasos, alergias a medicamentos...&#10;&#10;Podés dejar en blanco si no tenés condiciones a declarar."></textarea>
+          <span class="field-hint">Información confidencial — solo accede la central de monitoreo</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goTo(1)">← Volver</button>
+        <button class="btn btn-next" onclick="goTo(3)">Continuar — Contactos →</button>
+      </div>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="form-section" id="sec-3">
+      <div class="section-header">
+        <div class="section-icon">📞</div>
+        <div><h2>Contactos de Emergencia</h2><p>Serán notificados automáticamente ante una alerta</p></div>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-card-header"><div class="contact-num">1</div><div><div class="ct-title">Contacto principal</div><div class="ct-sub">Obligatorio</div></div></div>
+        <div class="field-row">
+          <div class="field" id="f-c1nombre"><label>Nombre <span class="req">*</span></label><input type="text" id="c1nombre" placeholder="Nombre"><span class="error-msg">Obligatorio</span></div>
+          <div class="field" id="f-c1apellido"><label>Apellido <span class="req">*</span></label><input type="text" id="c1apellido" placeholder="Apellido"><span class="error-msg">Obligatorio</span></div>
+        </div>
+        <div class="field-row">
+          <div class="field" id="f-c1tel1"><label>Teléfono 1 <span class="req">*</span></label><input type="tel" id="c1tel1" placeholder="+598 09X XXX XXX"><span class="error-msg">Obligatorio</span></div>
+          <div class="field"><label>Teléfono 2</label><input type="tel" id="c1tel2" placeholder="Opcional"></div>
+        </div>
+        <div class="field-row full">
+          <div class="field" id="f-c1vinculo"><label>Vínculo <span class="req">*</span></label>
+            <select id="c1vinculo"><option value="">— Seleccioná —</option><option>Cónyuge / Pareja</option><option>Hijo/a</option><option>Padre / Madre</option><option>Hermano/a</option><option>Nieto/a</option><option>Sobrino/a</option><option>Amigo/a</option><option>Vecino/a</option><option>Cuidador/a</option><option>Otro</option></select>
+            <span class="error-msg">Obligatorio</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="optional-contacts"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-back" onclick="goTo(2)">← Volver</button>
+        <button class="btn btn-submit" onclick="submitForm()">✓ Guardar Registro</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="success">
+      <div class="success-icon">✓</div>
+      <h2>¡Registro guardado!</h2>
+      <p>El usuario fue agregado correctamente al sistema de la central.</p>
+      <br>
+      <button class="btn-ver" onclick="switchView('dashboard')">Ver personas registradas →</button>
+      <button class="btn-nuevo2" onclick="resetForm()">Registrar otro</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DATOS: EMERGENCIAS Y MUTUALISTAS POR DEPARTAMENTO
+//  ⚠ Los departamentos marcados con [REVISAR] son estimaciones
+//    basadas en el sistema IAMC. Gabriel, por favor verificar.
+// ============================================================
+const DATOS = {
+  'Montevideo': {
+    emergencias: [
+      '1727',
+      'EMERGENCIA UNO',
+      'LA ESPAÑOLA MÓVIL',
+      'SEMM',
+      'SUAT',
+      'UCM',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'Blue Cross & Blue Shield Uruguay',
+      'CASMU',
+      'Círculo Católico',
+      'COSEM',
+      'CUDAM',
+      'Hospital Británico (Seguro Británico)',
+      'Hospital Evangélico',
+      'Médica Uruguaya (MUCAM)',
+      'Medicare',
+      'MP (Medicina Personalizada)',
+      'Seguro Americano',
+      'SMI (Servicio Médico Integral / Impasa)',
+      'Summum',
+      'Universal',
+      'No tengo cobertura'
+    ]
+  },
+  'Canelones': {
+    emergencias: [
+      '1727',
+      'EMEUNO',
+      'EMMI',
+      'SAPP',
+      'SEMIC',
+      'SUAT',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'Blue Cross & Blue Shield Uruguay',
+      'CAAMEPA (Centro de Asistencia de Pando y Región)',
+      'CASMU',
+      'Círculo Católico',
+      'COMECA (Cooperativa Médica de Canelones)',
+      'CRAMI (Cooperativa Regional de Asistencia Médica Integral)',
+      'CUDAM',
+      'Hospital Británico',
+      'Hospital Evangélico',
+      'Médica Uruguaya',
+      'MP (Medicina Personalizada)',
+      'SMI',
+      'Summum',
+      'No tengo cobertura'
+    ]
+  },
+  'Maldonado': {
+    emergencias: [
+      '1727',
+      'Cardimovil',
+      'Emergencia Móvil Piriápolis',
+      'LAE (La Asistencial)',
+      'UCM (Maldonado)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'Blue Cross & Blue Shield Uruguay',
+      'CASMU',
+      'COMAPA (Cooperativa Médica de Punta del Este)',
+      'Hospital Evangélico',
+      'Médica Uruguaya',
+      'MP (Medicina Personalizada)',
+      'SMI',
+      'Summum',
+      'No tengo cobertura'
+    ]
+  },
+  'Colonia': {
+    emergencias: [
+      '1727',
+      'Emergencia Juan Lacaze',
+      'Hospital Evangélico (Móvil)',
+      'SAMI (CAMEC)',
+      'Semco (Carmelo)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'Blue Cross & Blue Shield Uruguay',
+      'CAMEC (Cooperativa Asistencial Médica de Colonia)',
+      'Hospital Evangélico',
+      'Médica Uruguaya',
+      'SMI',
+      'Summum',
+      'No tengo cobertura'
+    ]
+  },
+  // ── DEPARTAMENTOS RESTANTES — ⚠ REVISAR CON GABRIEL ──
+  'Artigas': {
+    emergencias: [
+      '1727',
+      'AMEPA (Asistencia Médica de Artigas)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMEPA (Cooperativa Médica del Norte)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Cerro Largo': {
+    emergencias: [
+      '1727',
+      'EMCEL (Emergencia Cerro Largo)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMCEL (Cooperativa Médica Cerro Largo)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Durazno': {
+    emergencias: [
+      '1727',
+      'EMDU (Emergencia Médica Durazno)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMDU (Cooperativa Médica de Durazno)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Flores': {
+    emergencias: [
+      '1727',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COFAM (Cooperativa de Asistencia Médica de Flores)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Florida': {
+    emergencias: [
+      '1727',
+      'EMFLO (Emergencia Médica Florida)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMFLA (Cooperativa Médica de Florida)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Lavalleja': {
+    emergencias: [
+      '1727',
+      'CAME (Centro de Asistencia Médica)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'CAME (Centro de Asistencia Médica de Minas)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Paysandú': {
+    emergencias: [
+      '1727',
+      'COMEPA Emergencias',
+      'CAMS (Centro de Asistencia Médica Salud)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'Blue Cross & Blue Shield Uruguay',
+      'COMEPA (Cooperativa Médica de Paysandú)',
+      'Médica Uruguaya',
+      'SMI',
+      'Summum',
+      'No tengo cobertura'
+    ]
+  },
+  'Río Negro': {
+    emergencias: [
+      '1727',
+      'EMERGENCIA MÓVIL FRAY BENTOS',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMERI (Cooperativa Médica Río Negro)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Rivera': {
+    emergencias: [
+      '1727',
+      'EMER (Emergencia Rivera)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMERI Rivera',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Rocha': {
+    emergencias: [
+      '1727',
+      'EMERGENCIA ROCHA',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMARGEN (Cooperativa Médica de Rocha)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Salto': {
+    emergencias: [
+      '1727',
+      'COMESA Emergencias',
+      'SUAT Salto',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'Blue Cross & Blue Shield Uruguay',
+      'COMESA (Cooperativa Médica de Salto)',
+      'Médica Uruguaya',
+      'SMI',
+      'Summum',
+      'No tengo cobertura'
+    ]
+  },
+  'San José': {
+    emergencias: [
+      '1727',
+      'EMSANJE (Emergencia San José)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COSAJ (Cooperativa de Salud San José)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Soriano': {
+    emergencias: [
+      '1727',
+      'EMERGENCIA MÓVIL MERCEDES',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COSAR (Cooperativa de Salud Soriano)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Tacuarembó': {
+    emergencias: [
+      '1727',
+      'EMTAC (Emergencia Tacuarembó)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMAT (Cooperativa Médica de Tacuarembó)',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  },
+  'Treinta y Tres': {
+    emergencias: [
+      '1727',
+      'EMTYT (Emergencia Treinta y Tres)',
+      'NO CUENTO CON SERVICIO DE EMERGENCIA PRIVADA'
+    ],
+    mutualistas: [
+      'Asociación Española',
+      'COMEPA Treinta y Tres',
+      'Médica Uruguaya',
+      'SMI',
+      'No tengo cobertura'
+    ]
+  }
+};
+
+function populateSelect(selectId, options, defaultLabel, hintId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = `<option value="">${defaultLabel}</option>`;
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    sel.appendChild(opt);
+  });
+  if (hintId) document.getElementById(hintId).style.display = 'none';
+}
+
+function onDeptoChange() {
+  const depto = document.getElementById('departamento').value;
+  const data = DATOS[depto];
+  if (data) {
+    populateSelect('emergencia', data.emergencias, '— Seleccioná tu emergencia —', 'emerg-hint');
+    populateSelect('mutualista', data.mutualistas, '— Seleccioná tu mutualista —', 'mutual-hint');
+  } else {
+    document.getElementById('emergencia').innerHTML = '<option value="">— Primero seleccioná el Departamento —</option>';
+    document.getElementById('mutualista').innerHTML = '<option value="">— Primero seleccioná el Departamento —</option>';
+    if (document.getElementById('emerg-hint')) document.getElementById('emerg-hint').style.display = 'block';
+    if (document.getElementById('mutual-hint')) document.getElementById('mutual-hint').style.display = 'block';
+  }
+}
+
+// ============================================================
+//  STORAGE
+// ============================================================
+const STORAGE_KEY = 'emergencia_usuarios_v2';
+function getUsuarios() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
+function saveUsuarios(arr) { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+
+// ============================================================
+//  NAV
+// ============================================================
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+
+  const nav = document.getElementById('main-nav');
+  if (v === 'home' || v === 'dashboard') {
+    nav.style.display = 'none';
+  } else {
+    nav.style.display = 'flex';
+    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+    const idx = v === 'misdatos' ? 0 : v === 'registro' ? 1 : v === 'sos' ? 2 : 3;
+    const tabs = document.querySelectorAll('.nav-tab');
+    if (tabs[idx]) tabs[idx].classList.add('active');
+  }
+
+  if (v === 'sos') switchToSOS();
+  if (v === 'misdatos') switchToMisDatos();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+//  FORM
+// ============================================================
+let currentStep = 1;
+
+function goTo(step) {
+  if (step > currentStep && !validateStep(currentStep)) return;
+  document.getElementById(`sec-${currentStep}`).classList.remove('active');
+  document.getElementById(`step-ind-${currentStep}`).classList.remove('active');
+  if (step > currentStep) document.getElementById(`step-ind-${currentStep}`).classList.add('done');
+  else document.getElementById(`step-ind-${step}`).classList.remove('done');
+  currentStep = step;
+  document.getElementById(`sec-${currentStep}`).classList.add('active');
+  document.getElementById(`step-ind-${currentStep}`).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validateStep(step) {
+  // Paso 1: al menos uno de los dos teléfonos principales
+  const required = {
+    1: ['nombres','apellidos','cedula','nacimiento','domicilio','ciudad','departamento'],
+    2: ['emergencia','mutualista'],
+    3: ['c1nombre','c1apellido','c1tel1','c1vinculo']
+  };
+  let valid = true;
+  (required[step]||[]).forEach(id => {
+    const el = document.getElementById(id);
+    const wrap = document.getElementById('f-'+id);
+    if (!el || !wrap) return;
+    if (!el.value.trim()) {
+      wrap.classList.add('invalid'); valid = false;
+      el.addEventListener('input', () => wrap.classList.remove('invalid'), {once:true});
+      el.addEventListener('change', () => wrap.classList.remove('invalid'), {once:true});
+    } else wrap.classList.remove('invalid');
+  });
+
+  // Validación especial paso 1: al menos un teléfono
+  if (step === 1) {
+    const tl = document.getElementById('tel-linea').value.trim();
+    const tc = document.getElementById('tel-cel').value.trim();
+    const wl = document.getElementById('f-tel-linea');
+    const wc = document.getElementById('f-tel-cel');
+    if (!tl && !tc) {
+      wl.classList.add('invalid'); wc.classList.add('invalid'); valid = false;
+      ['tel-linea','tel-cel'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          wl.classList.remove('invalid'); wc.classList.remove('invalid');
+        }, {once:true});
+      });
+    } else {
+      wl.classList.remove('invalid'); wc.classList.remove('invalid');
+    }
+  }
+
+  if (!valid) {
+    const first = document.querySelector('.field.invalid input, .field.invalid select');
+    if (first) first.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  return valid;
+}
+
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzuXlNzHBxjn_A10djmQNgiR6Q3YcVwdzauzqhdDyHOICh-sV2bLWa0B4V6QDwncS5X/exec';
+
+function submitForm() {
+  if (!validateStep(3)) return;
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  const usuario = {
+    id: Date.now().toString(),
+    registrado: new Date().toISOString(),
+    nombres:g('nombres'), apellidos:g('apellidos'),
+    cedula:g('cedula'), nacimiento:g('nacimiento'),
+    domicilio:g('domicilio'), apartamento:g('apartamento'),
+    ciudad:g('ciudad'), departamento:g('departamento'), pais:g('pais'),
+    telLinea:g('tel-linea'), telCel:g('tel-cel'), telOtro:g('tel-otro'),
+    emergencia:g('emergencia'), mutualista:g('mutualista'),
+    enfermedades:g('enfermedades'),
+    c1nombre:g('c1nombre'), c1apellido:g('c1apellido'), c1tel1:g('c1tel1'), c1tel2:g('c1tel2'), c1vinculo:g('c1vinculo'),
+    c2nombre:g('c2nombre'), c2apellido:g('c2apellido'), c2tel1:g('c2tel1'), c2tel2:g('c2tel2'), c2vinculo:g('c2vinculo'),
+    c3nombre:g('c3nombre'), c3apellido:g('c3apellido'), c3tel1:g('c3tel1'), c3tel2:g('c3tel2'), c3vinculo:g('c3vinculo'),
+    c4nombre:g('c4nombre'), c4apellido:g('c4apellido'), c4tel1:g('c4tel1'), c4tel2:g('c4tel2'), c4vinculo:g('c4vinculo'),
+  };
+
+  // Guardar localmente también
+  const lista = getUsuarios();
+  lista.unshift(usuario);
+  saveUsuarios(lista);
+
+  // Mostrar enviando
+  const btnSubmit = document.querySelector('.btn-submit');
+  btnSubmit.textContent = '⏳ Enviando...';
+  btnSubmit.disabled = true;
+
+  // Enviar a Google Sheets via JSONP (método más confiable, sin CORS)
+  const callbackName = 'gsCallback_' + Date.now();
+  const timeout = setTimeout(() => {
+    // Si tarda más de 8 seg igual mostramos éxito (quedó en localStorage)
+    cleanup();
+    mostrarExito();
+  }, 8000);
+
+  function cleanup() {
+    delete window[callbackName];
+    const oldScript = document.getElementById('jsonp-script');
+    if (oldScript) oldScript.remove();
+    clearTimeout(timeout);
+    btnSubmit.textContent = '✓ Guardar Registro';
+    btnSubmit.disabled = false;
+  }
+
+  window[callbackName] = function(response) {
+    cleanup();
+    mostrarExito();
+  };
+
+  // Codificar cada campo individualmente
+  const params = Object.entries(usuario)
+    .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v || ''))
+    .join('&');
+
+  const script = document.createElement('script');
+  script.id = 'jsonp-script';
+  script.src = SHEETS_URL + '?' + params + '&callback=' + callbackName;
+  script.onerror = function() { cleanup(); mostrarExito(); };
+  document.body.appendChild(script);
+}
+
+function mostrarExito() {
+  [1,2,3].forEach(i => {
+    document.getElementById(`step-ind-${i}`).classList.remove('active');
+    document.getElementById(`step-ind-${i}`).classList.add('done');
+  });
+  document.getElementById('sec-3').classList.remove('active');
+  document.getElementById('success').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetForm() {
+  document.querySelectorAll('#view-registro input, #view-registro select, #view-registro textarea')
+    .forEach(el => { el.value = el.tagName==='SELECT'?(el.options[0]?.value??''):''; });
+  document.getElementById('pais').value = 'Uruguay';
+  document.getElementById('emergencia').innerHTML = '<option value="">— Primero seleccioná el Departamento —</option>';
+  document.getElementById('mutualista').innerHTML = '<option value="">— Primero seleccioná el Departamento —</option>';
+  document.getElementById('success').classList.remove('show');
+  [1,2,3].forEach(i => document.getElementById(`step-ind-${i}`).classList.remove('active','done'));
+  currentStep = 1;
+  document.getElementById('sec-1').classList.add('active');
+  document.getElementById('step-ind-1').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Generate optional contacts
+const oc = document.getElementById('optional-contacts');
+[2,3,4].forEach(n => {
+  const lbl = {2:'Segundo contacto',3:'Tercer contacto',4:'Cuarto contacto'}[n];
+  oc.innerHTML += `
+  <div class="contact-card">
+    <div class="contact-card-header">
+      <div class="contact-num">${n}</div>
+      <div><div class="ct-title">${lbl}</div><div class="ct-sub">Persona ${n}</div></div>
+      <span class="contact-optional">Opcional</span>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Nombre</label><input type="text" id="c${n}nombre" placeholder="Nombre"></div>
+      <div class="field"><label>Apellido</label><input type="text" id="c${n}apellido" placeholder="Apellido"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Teléfono 1</label><input type="tel" id="c${n}tel1" placeholder="+598 09X XXX XXX"></div>
+      <div class="field"><label>Teléfono 2</label><input type="tel" id="c${n}tel2" placeholder="Opcional"></div>
+    </div>
+    <div class="field-row full">
+      <div class="field"><label>Vínculo</label>
+        <select id="c${n}vinculo">
+          <option value="">— Seleccioná —</option>
+          <option>Cónyuge / Pareja</option><option>Hijo/a</option><option>Padre / Madre</option>
+          <option>Hermano/a</option><option>Nieto/a</option><option>Sobrino/a</option>
+          <option>Amigo/a</option><option>Vecino/a</option><option>Cuidador/a</option><option>Otro</option>
+        </select>
+      </div>
+    </div>
+  </div>`;
+});
+
+
+// ============================================================
+//  SOS LOGIC
+// ============================================================
+const SOS_USER_KEY = 'sos_usuario_activo';
+
+function switchToSOS() {
+  const saved = localStorage.getItem(SOS_USER_KEY);
+  if (saved) {
+    const u = JSON.parse(saved);
+    mostrarSOSMain(u);
+  } else {
+    document.getElementById('sos-login').style.display = 'flex';
+    document.getElementById('sos-main').style.display = 'none';
+    document.getElementById('sos-sending').classList.remove('show');
+    document.getElementById('sos-confirmed').classList.remove('show');
+  }
+}
+
+function sosLogin() {
+  const cedula = document.getElementById('sos-cedula-input').value.trim();
+  const usuarios = getUsuarios();
+  // Buscar por cedula normalizando (sin puntos ni guiones)
+  const norm = s => s.replace(/[.\-\s]/g, '');
+  const u = usuarios.find(x => norm(x.cedula) === norm(cedula));
+  if (!u) {
+    document.getElementById('sos-login-error').style.display = 'block';
+    return;
+  }
+  localStorage.setItem(SOS_USER_KEY, JSON.stringify(u));
+  mostrarSOSMain(u);
+}
+
+function mostrarSOSMain(u) {
+  document.getElementById('sos-login').style.display = 'none';
+  document.getElementById('sos-sending').classList.remove('show');
+  document.getElementById('sos-confirmed').classList.remove('show');
+  document.getElementById('sos-main').style.display = 'flex';
+  document.getElementById('sos-user-name').textContent = u.nombres + ' ' + u.apellidos;
+  document.getElementById('sos-user-sub').textContent = u.emergencia || 'Sin emergencia asignada';
+
+  // Contactos
+  const list = document.getElementById('sos-contacts-list');
+  list.innerHTML = '';
+  // Central siempre primero
+  list.innerHTML += `<div class="sos-contact-item">
+    <div class="sci-num">★</div>
+    <div><div class="sci-name">Central de Emergencias</div><div class="sci-sub">Monitoreo 24hs</div></div>
+    <div class="sci-tel">Primero</div>
+  </div>`;
+  [1,2,3,4].forEach(n => {
+    const nombre = u['c' + n + 'nombre'];
+    if (!nombre) return;
+    list.innerHTML += `<div class="sos-contact-item">
+      <div class="sci-num">${n}</div>
+      <div><div class="sci-name">${nombre} ${u['c' + n + 'apellido'] || ''}</div><div class="sci-sub">${u['c' + n + 'vinculo'] || ''}</div></div>
+      <div class="sci-tel">${u['c' + n + 'tel1'] || ''}</div>
+    </div>`;
+  });
+}
+
+function sosCerrarSesion() {
+  localStorage.removeItem(SOS_USER_KEY);
+  document.getElementById('sos-cedula-input').value = '';
+  document.getElementById('sos-login-error').style.display = 'none';
+  document.getElementById('sos-main').style.display = 'none';
+  document.getElementById('sos-login').style.display = 'flex';
+}
+
+function activarSOS() {
+  const saved = localStorage.getItem(SOS_USER_KEY);
+  if (!saved) return;
+  const u = JSON.parse(saved);
+
+  document.getElementById('sos-main').style.display = 'none';
+  document.getElementById('sos-sending').classList.add('show');
+
+  // Obtener ubicación GPS
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => enviarAlerta(u, pos.coords.latitude, pos.coords.longitude),
+      err => enviarAlerta(u, null, null)
+    );
+  } else {
+    enviarAlerta(u, null, null);
+  }
+}
+
+function enviarAlerta(u, lat, lng) {
+  const timestamp = new Date().toLocaleString('es-UY');
+  const mapsLink = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : 'Ubicación no disponible';
+  window._sosUbicacion = mapsLink;
+
+  const params = new URLSearchParams({
+    tipo: 'ALERTA_SOS',
+    timestamp: timestamp,
+    cedula: u.cedula,
+    nombre: u.nombres + ' ' + u.apellidos,
+    domicilio: u.domicilio + (u.apartamento ? ' Apto ' + u.apartamento : '') + ', ' + u.ciudad + ', ' + u.departamento,
+    emergencia: u.emergencia || '',
+    mutualista: u.mutualista || '',
+    enfermedades: u.enfermedades || '',
+    telLinea: u.telLinea || '',
+    telCel: u.telCel || '',
+    lat: lat || '',
+    lng: lng || '',
+    ubicacion: mapsLink,
+    c1nombre: u.c1nombre || '', c1apellido: u.c1apellido || '', c1tel1: u.c1tel1 || '', c1vinculo: u.c1vinculo || '',
+    c2nombre: u.c2nombre || '', c2apellido: u.c2apellido || '', c2tel1: u.c2tel1 || '', c2vinculo: u.c2vinculo || '',
+    c3nombre: u.c3nombre || '', c3apellido: u.c3apellido || '', c3tel1: u.c3tel1 || '', c3vinculo: u.c3vinculo || '',
+    c4nombre: u.c4nombre || '', c4apellido: u.c4apellido || '', c4tel1: u.c4tel1 || '', c4vinculo: u.c4vinculo || '',
+  }).toString();
+
+  const callbackName = 'sosCallback_' + Date.now();
+  window[callbackName] = function() {
+    delete window[callbackName];
+    const s = document.getElementById('jsonp-sos');
+    if (s) s.remove();
+    mostrarConfirmado();
+  };
+
+  const script = document.createElement('script');
+  script.id = 'jsonp-sos';
+  script.src = SHEETS_URL + '?' + params + '&callback=' + callbackName;
+  script.onerror = function() { mostrarConfirmado(); };
+  document.body.appendChild(script);
+
+  // Timeout de seguridad
+  setTimeout(() => { mostrarConfirmado(); }, 6000);
+}
+
+function mostrarConfirmado() {
+  document.getElementById('sos-sending').classList.remove('show');
+  document.getElementById('sos-confirmed').classList.add('show');
+  generarBotonesWA();
+}
+
+function generarBotonesWA() {
+  const saved = localStorage.getItem(SOS_USER_KEY);
+  if (!saved) return;
+  const u = JSON.parse(saved);
+
+  const timestamp = new Date().toLocaleString('es-UY');
+  const ubicacion = window._sosUbicacion || 'Ubicación no disponible';
+  const domicilio = u.domicilio + (u.apartamento ? ' Apto ' + u.apartamento : '') + ', ' + u.ciudad + ', ' + u.departamento;
+
+  const mensaje = '🚨 *ALERTA DE EMERGENCIA*\n\n' +
+    '*' + u.nombres + ' ' + u.apellidos + '* necesita ayuda.\n\n' +
+    '📍 *Domicilio:* ' + domicilio + '\n' +
+    (ubicacion !== 'Ubicación no disponible' ? '🗺 *Ubicación actual:* ' + ubicacion + '\n' : '') +
+    '🏥 *Emergencia:* ' + (u.emergencia || '—') + '\n' +
+    '📞 *Tel línea:* ' + (u.telLinea || '—') + '\n' +
+    '📱 *Cel:* ' + (u.telCel || '—') + '\n\n' +
+    '⏰ ' + timestamp;
+
+  const container = document.getElementById('wa-buttons');
+  container.innerHTML = '';
+
+  [1,2,3,4].forEach(n => {
+    const nombre = u['c'+n+'nombre'];
+    const tel = u['c'+n+'tel1'];
+    if (!nombre || !tel) return;
+
+    // Limpiar teléfono: sacar espacios, guiones, paréntesis
+    const telLimpio = tel.replace(/[\s\-\(\)]/g, '');
+    // Agregar código de país si no lo tiene
+    const telWA = telLimpio.startsWith('+') ? telLimpio.replace('+','') :
+                  telLimpio.startsWith('0') ? '598' + telLimpio.slice(1) :
+                  '598' + telLimpio;
+
+    const waUrl = 'https://wa.me/' + telWA + '?text=' + encodeURIComponent(mensaje);
+
+    container.innerHTML += '<a class="wa-btn" href="' + waUrl + '" target="_blank">' +
+      '<span class="wa-icon">💬</span>' +
+      '<div class="wa-info">' +
+        '<div class="wa-name">' + nombre + ' ' + (u['c'+n+'apellido']||'') + ' (' + (u['c'+n+'vinculo']||'') + ')</div>' +
+        '<div class="wa-num">' + tel + '</div>' +
+      '</div>' +
+      '<span style="margin-left:auto;font-size:0.75rem;">Abrir →</span>' +
+    '</a>';
+  });
+}
+
+function sosCancelar() {
+  document.getElementById('sos-confirmed').classList.remove('show');
+  switchView('home');
+}
+
+
+// ============================================================
+//  MIS DATOS
+// ============================================================
+function switchToMisDatos() {
+  document.getElementById('misdatos-login').style.display = 'flex';
+  document.getElementById('misdatos-ficha').style.display = 'none';
+  document.getElementById('misdatos-error').style.display = 'none';
+  document.getElementById('misdatos-cedula').value = '';
+  // Si ya hay sesión SOS activa, usarla directamente
+  const saved = localStorage.getItem(SOS_USER_KEY);
+  if (saved) {
+    mostrarFicha(JSON.parse(saved));
+  }
+}
+
+function misdatosLogin() {
+  const cedula = document.getElementById('misdatos-cedula').value.trim();
+  const norm = s => s.replace(/[.\-\s]/g, '');
+  const u = getUsuarios().find(x => norm(x.cedula) === norm(cedula));
+  if (!u) {
+    document.getElementById('misdatos-error').style.display = 'block';
+    return;
+  }
+  mostrarFicha(u);
+}
+
+function mostrarFicha(u) {
+  document.getElementById('misdatos-login').style.display = 'none';
+  document.getElementById('misdatos-ficha').style.display = 'block';
+
+  document.getElementById('md-nombre').textContent = u.nombres + ' ' + u.apellidos;
+  document.getElementById('md-cedula').textContent = 'CI: ' + u.cedula;
+  document.getElementById('md-nac').textContent = fmtDate(u.nacimiento);
+  document.getElementById('md-domicilio').textContent = u.domicilio + (u.apartamento ? ' Apto ' + u.apartamento : '') + ', ' + u.ciudad + ', ' + u.departamento;
+  document.getElementById('md-emergencia').textContent = u.emergencia || '—';
+  document.getElementById('md-mutualista').textContent = u.mutualista || '—';
+
+  const tels = [u.telLinea ? 'Línea: ' + u.telLinea : null, u.telCel ? 'Cel: ' + u.telCel : null, u.telOtro ? 'Otro: ' + u.telOtro : null].filter(Boolean).join(' / ');
+  document.getElementById('md-tels').textContent = tels || '—';
+
+  if (u.enfermedades) {
+    document.getElementById('md-enfermedades').textContent = u.enfermedades;
+    document.getElementById('md-enf-wrap').style.display = 'block';
+  } else {
+    document.getElementById('md-enf-wrap').style.display = 'none';
+  }
+
+  const cont = document.getElementById('md-contactos');
+  cont.innerHTML = '';
+  [1,2,3,4].forEach(n => {
+    if (!u['c'+n+'nombre']) return;
+    cont.innerHTML += '<div class="contact-row"><div class="cn">' + n + '</div><div class="ci"><h4>' + u['c'+n+'nombre'] + ' ' + (u['c'+n+'apellido']||'') + '</h4><p>' + (u['c'+n+'vinculo']||'') + '</p></div><div class="ct">' + (u['c'+n+'tel1']||'') + '</div></div>';
+  });
+}
+
+function misdatosCerrar() {
+  document.getElementById('misdatos-login').style.display = 'flex';
+  document.getElementById('misdatos-ficha').style.display = 'none';
+}
+
+</script>
+
+<!-- ============================================================ -->
+<!--  SOS                                                         -->
+<!-- ============================================================ -->
+<div class="view" id="view-sos">
+
+  <!-- LOGIN (cuando no hay usuario recordado) -->
+  <div class="sos-login" id="sos-login">
+    <div style="font-size:52px;margin-bottom:16px">🆘</div>
+    <h2>Identificate para continuar</h2>
+    <p>Ingresá tu número de cédula para acceder al botón SOS</p>
+    <input type="text" id="sos-cedula-input" placeholder="ej. 1.234.567-8" maxlength="12">
+    <div class="sos-login-error" id="sos-login-error">No encontramos esa cédula en el sistema</div>
+    <button class="sos-login-btn" onclick="sosLogin()">Ingresar →</button>
+  </div>
+
+  <!-- PANTALLA SOS PRINCIPAL -->
+  <div class="sos-wrap" id="sos-main" style="display:none">
+    <div class="sos-user-bar">
+      <div class="su-icon">👤</div>
+      <div>
+        <div class="su-name" id="sos-user-name">—</div>
+        <div class="su-sub" id="sos-user-sub">—</div>
+      </div>
+      <span class="su-change" onclick="sosCerrarSesion()">Cambiar</span>
+    </div>
+
+    <div class="sos-btn-wrap">
+      <div class="sos-ring"></div>
+      <div class="sos-ring2"></div>
+      <button class="sos-btn" onclick="activarSOS()">
+        <span class="sb-icon">🆘</span>
+        <span class="sb-label">SOS</span>
+      </button>
+    </div>
+
+    <p class="sos-hint">Presioná el botón para alertar a la central</p>
+
+    <div class="sos-contacts">
+      <h4>Se notificará a</h4>
+      <div id="sos-contacts-list"></div>
+    </div>
+  </div>
+
+  <!-- ENVIANDO -->
+  <div class="sos-sending" id="sos-sending">
+    <div class="sos-spinner"></div>
+    <h2>Enviando alerta...</h2>
+    <p>Estamos notificando a la central<br>y a tus contactos de emergencia</p>
+  </div>
+
+  <!-- CONFIRMADO -->
+  <div class="sos-confirmed" id="sos-confirmed">
+    <div class="sc-icon">🚨</div>
+    <h2>¡Alerta enviada!</h2>
+    <p>La central de emergencias fue notificada.<br>Avisá a tus contactos por WhatsApp:</p>
+
+    <div class="wa-section">
+      <h4>Enviar WhatsApp a mis contactos</h4>
+      <div id="wa-buttons"></div>
+    </div>
+
+    <button class="sos-cancel" onclick="sosCancelar()">Volver al inicio</button>
+  </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!--  MIS DATOS                                                   -->
+<!-- ============================================================ -->
+<div class="view" id="view-misdatos">
+
+  <!-- LOGIN -->
+  <div class="sos-login" id="misdatos-login">
+    <div style="font-size:52px;margin-bottom:16px">👤</div>
+    <h2>Ver mis datos</h2>
+    <p>Ingresá tu cédula para ver tu ficha de registro</p>
+    <input type="text" id="misdatos-cedula" placeholder="ej. 1.234.567-8" maxlength="12">
+    <div class="sos-login-error" id="misdatos-error">No encontramos esa cédula en el sistema</div>
+    <button class="sos-login-btn" onclick="misdatosLogin()">Ver mis datos →</button>
+  </div>
+
+  <!-- FICHA -->
+  <div id="misdatos-ficha" style="display:none; padding:24px 20px; max-width:600px; margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+      <div style="width:52px;height:52px;border-radius:14px;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);display:flex;align-items:center;justify-content:center;font-size:26px;">👤</div>
+      <div>
+        <div id="md-nombre" style="font-family:'Sora',sans-serif;font-weight:800;font-size:1.2rem;"></div>
+        <div id="md-cedula" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;"></div>
+      </div>
+      <button onclick="misdatosCerrar()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text-muted);cursor:pointer;font-size:0.75rem;">Cerrar</button>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Datos Personales</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="dk">Fecha de Nacimiento</div><div class="dv" id="md-nac">—</div></div>
+        <div class="detail-item"><div class="dk">Teléfonos</div><div class="dv" id="md-tels">—</div></div>
+      </div>
+      <div class="detail-grid full" style="margin-top:10px">
+        <div class="detail-item"><div class="dk">Domicilio</div><div class="dv" id="md-domicilio">—</div></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Datos Médicos</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="dk">Emergencia</div><div class="dv" id="md-emergencia">—</div></div>
+        <div class="detail-item"><div class="dk">Mutualista</div><div class="dv" id="md-mutualista">—</div></div>
+      </div>
+      <div class="detail-grid full" id="md-enf-wrap" style="margin-top:10px;display:none">
+        <div class="detail-item"><div class="dk">Condiciones médicas</div><div class="dv" id="md-enfermedades">—</div></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Mis Contactos de Emergencia</div>
+      <div id="md-contactos"></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

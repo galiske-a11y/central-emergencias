@@ -183,6 +183,62 @@
     .field-row,.field-row.third{grid-template-columns:1fr;}
     .step-label{display:none;}
   }
+
+  /* ====== SOS VIEW ====== */
+  .sos-tab{color:#FF4757 !important;}
+  #view-sos{background:linear-gradient(160deg,#0F1117 0%,#1a0508 100%);min-height:calc(100vh - 57px);}
+  .sos-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px 20px;text-align:center;}
+  .sos-user-bar{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 20px;display:flex;align-items:center;gap:12px;margin-bottom:40px;width:100%;max-width:400px;}
+  .sos-user-bar .su-icon{width:40px;height:40px;border-radius:12px;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .sos-user-bar .su-name{font-family:'Sora',sans-serif;font-weight:700;font-size:0.95rem;text-align:left;}
+  .sos-user-bar .su-sub{font-size:0.72rem;color:var(--text-muted);text-align:left;}
+  .sos-user-bar .su-change{margin-left:auto;font-size:0.72rem;color:var(--text-muted);cursor:pointer;text-decoration:underline;white-space:nowrap;}
+  .sos-btn-wrap{position:relative;margin-bottom:40px;}
+  .sos-ring{position:absolute;inset:-20px;border-radius:50%;border:2px solid rgba(217,43,58,0.2);animation:sosPulse 2s infinite;}
+  .sos-ring2{position:absolute;inset:-40px;border-radius:50%;border:2px solid rgba(217,43,58,0.1);animation:sosPulse 2s infinite 0.5s;}
+  @keyframes sosPulse{0%{transform:scale(0.95);opacity:1;}100%{transform:scale(1.15);opacity:0;}}
+  .sos-btn{width:200px;height:200px;border-radius:50%;background:var(--red);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 60px rgba(217,43,58,0.5);transition:all 0.15s;position:relative;z-index:1;}
+  .sos-btn:hover{transform:scale(1.04);box-shadow:0 0 80px rgba(217,43,58,0.7);}
+  .sos-btn:active{transform:scale(0.97);}
+  .sos-btn .sb-icon{font-size:56px;line-height:1;}
+  .sos-btn .sb-label{font-family:'Sora',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:0.05em;}
+  .sos-hint{font-size:0.8rem;color:var(--text-muted);margin-bottom:32px;}
+  .sos-contacts{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;width:100%;max-width:400px;}
+  .sos-contacts h4{font-family:'Sora',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;}
+  .sos-contact-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .sos-contact-item:last-child{border-bottom:none;}
+  .sos-contact-item .sci-num{width:24px;height:24px;border-radius:7px;background:var(--red-bg);border:1px solid rgba(217,43,58,0.2);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:800;font-size:0.7rem;color:var(--red-light);flex-shrink:0;}
+  .sos-contact-item .sci-name{font-size:0.82rem;font-weight:600;}
+  .sos-contact-item .sci-sub{font-size:0.7rem;color:var(--text-muted);}
+  .sos-contact-item .sci-tel{margin-left:auto;font-size:0.75rem;color:var(--text-muted);}
+
+  /* SOS ENVIANDO */
+  .sos-sending{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px;text-align:center;}
+  .sos-sending.show{display:flex;animation:fadeUp 0.3s ease;}
+  .sos-spinner{width:80px;height:80px;border-radius:50%;border:4px solid rgba(217,43,58,0.2);border-top-color:var(--red);animation:spin 1s linear infinite;margin-bottom:24px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .sos-sending h2{font-family:'Sora',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:8px;}
+  .sos-sending p{color:var(--text-muted);font-size:0.88rem;}
+
+  /* SOS CONFIRMADO */
+  .sos-confirmed{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px;text-align:center;}
+  .sos-confirmed.show{display:flex;animation:fadeUp 0.3s ease;}
+  .sos-confirmed .sc-icon{width:100px;height:100px;border-radius:50%;background:rgba(217,43,58,0.15);border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:50px;margin-bottom:24px;animation:sosPulse 1.5s infinite;}
+  .sos-confirmed h2{font-family:'Sora',sans-serif;font-size:1.6rem;font-weight:800;color:var(--red-light);margin-bottom:10px;}
+  .sos-confirmed p{color:var(--text-muted);font-size:0.9rem;line-height:1.6;max-width:320px;}
+  .sos-cancel{margin-top:28px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 28px;font-family:'Sora',sans-serif;font-weight:700;font-size:0.85rem;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+  .sos-cancel:hover{border-color:rgba(255,255,255,0.2);color:var(--text);}
+
+  /* LOGIN SOS */
+  .sos-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 57px);padding:32px 20px;text-align:center;}
+  .sos-login h2{font-family:'Sora',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:8px;}
+  .sos-login p{color:var(--text-muted);font-size:0.85rem;margin-bottom:28px;}
+  .sos-login input{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;font-family:'Inter',sans-serif;font-size:1rem;color:var(--text);width:100%;max-width:320px;text-align:center;letter-spacing:0.05em;}
+  .sos-login input:focus{outline:none;border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(217,43,58,0.1);}
+  .sos-login-btn{margin-top:14px;background:var(--red);color:#fff;border:none;border-radius:12px;padding:14px 32px;font-family:'Sora',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;width:100%;max-width:320px;transition:all 0.2s;}
+  .sos-login-btn:hover{background:#c42233;}
+  .sos-login-error{font-size:0.78rem;color:#ff6b6b;margin-top:8px;display:none;}
+
 </style>
 </head>
 <body>
@@ -195,6 +251,7 @@
   <div class="nav-tabs">
     <div class="nav-tab active" onclick="switchView('dashboard')">📋 Personas Registradas</div>
     <div class="nav-tab" onclick="switchView('registro')">➕ Nuevo Registro</div>
+    <div class="nav-tab sos-tab" onclick="switchView('sos')">🆘 SOS</div>
   </div>
   <div class="nav-count" id="nav-count">0 usuarios</div>
 </nav>
@@ -785,8 +842,10 @@ function switchView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
   document.getElementById('view-' + v).classList.add('active');
-  document.querySelectorAll('.nav-tab')[v === 'dashboard' ? 0 : 1].classList.add('active');
+  const idx = v === 'dashboard' ? 0 : v === 'registro' ? 1 : 2;
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
   if (v === 'dashboard') renderDashboard();
+  if (v === 'sos') switchToSOS();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1110,7 +1169,209 @@ const oc = document.getElementById('optional-contacts');
   </div>`;
 });
 
+
+// ============================================================
+//  SOS LOGIC
+// ============================================================
+const SOS_USER_KEY = 'sos_usuario_activo';
+
+function switchToSOS() {
+  const saved = localStorage.getItem(SOS_USER_KEY);
+  if (saved) {
+    const u = JSON.parse(saved);
+    mostrarSOSMain(u);
+  } else {
+    document.getElementById('sos-login').style.display = 'flex';
+    document.getElementById('sos-main').style.display = 'none';
+    document.getElementById('sos-sending').classList.remove('show');
+    document.getElementById('sos-confirmed').classList.remove('show');
+  }
+}
+
+function sosLogin() {
+  const cedula = document.getElementById('sos-cedula-input').value.trim();
+  const usuarios = getUsuarios();
+  // Buscar por cedula normalizando (sin puntos ni guiones)
+  const norm = s => s.replace(/[.\-\s]/g, '');
+  const u = usuarios.find(x => norm(x.cedula) === norm(cedula));
+  if (!u) {
+    document.getElementById('sos-login-error').style.display = 'block';
+    return;
+  }
+  localStorage.setItem(SOS_USER_KEY, JSON.stringify(u));
+  mostrarSOSMain(u);
+}
+
+function mostrarSOSMain(u) {
+  document.getElementById('sos-login').style.display = 'none';
+  document.getElementById('sos-sending').classList.remove('show');
+  document.getElementById('sos-confirmed').classList.remove('show');
+  document.getElementById('sos-main').style.display = 'flex';
+  document.getElementById('sos-user-name').textContent = u.nombres + ' ' + u.apellidos;
+  document.getElementById('sos-user-sub').textContent = u.emergencia || 'Sin emergencia asignada';
+
+  // Contactos
+  const list = document.getElementById('sos-contacts-list');
+  list.innerHTML = '';
+  // Central siempre primero
+  list.innerHTML += `<div class="sos-contact-item">
+    <div class="sci-num">★</div>
+    <div><div class="sci-name">Central de Emergencias</div><div class="sci-sub">Monitoreo 24hs</div></div>
+    <div class="sci-tel">Primero</div>
+  </div>`;
+  [1,2,3,4].forEach(n => {
+    const nombre = u['c' + n + 'nombre'];
+    if (!nombre) return;
+    list.innerHTML += `<div class="sos-contact-item">
+      <div class="sci-num">${n}</div>
+      <div><div class="sci-name">${nombre} ${u['c' + n + 'apellido'] || ''}</div><div class="sci-sub">${u['c' + n + 'vinculo'] || ''}</div></div>
+      <div class="sci-tel">${u['c' + n + 'tel1'] || ''}</div>
+    </div>`;
+  });
+}
+
+function sosCerrarSesion() {
+  localStorage.removeItem(SOS_USER_KEY);
+  document.getElementById('sos-cedula-input').value = '';
+  document.getElementById('sos-login-error').style.display = 'none';
+  document.getElementById('sos-main').style.display = 'none';
+  document.getElementById('sos-login').style.display = 'flex';
+}
+
+function activarSOS() {
+  const saved = localStorage.getItem(SOS_USER_KEY);
+  if (!saved) return;
+  const u = JSON.parse(saved);
+
+  document.getElementById('sos-main').style.display = 'none';
+  document.getElementById('sos-sending').classList.add('show');
+
+  // Obtener ubicación GPS
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => enviarAlerta(u, pos.coords.latitude, pos.coords.longitude),
+      err => enviarAlerta(u, null, null)
+    );
+  } else {
+    enviarAlerta(u, null, null);
+  }
+}
+
+function enviarAlerta(u, lat, lng) {
+  const timestamp = new Date().toLocaleString('es-UY');
+  const mapsLink = lat ? 'https://maps.google.com/?q=' + lat + ',' + lng : 'Ubicacion no disponible';
+
+  const params = new URLSearchParams({
+    tipo: 'ALERTA_SOS',
+    timestamp: timestamp,
+    cedula: u.cedula,
+    nombre: u.nombres + ' ' + u.apellidos,
+    domicilio: u.domicilio + (u.apartamento ? ' Apto ' + u.apartamento : '') + ', ' + u.ciudad + ', ' + u.departamento,
+    emergencia: u.emergencia || '',
+    mutualista: u.mutualista || '',
+    enfermedades: u.enfermedades || '',
+    telLinea: u.telLinea || '',
+    telCel: u.telCel || '',
+    lat: lat || '',
+    lng: lng || '',
+    ubicacion: mapsLink,
+    c1nombre: u.c1nombre || '', c1apellido: u.c1apellido || '', c1tel1: u.c1tel1 || '', c1vinculo: u.c1vinculo || '',
+    c2nombre: u.c2nombre || '', c2apellido: u.c2apellido || '', c2tel1: u.c2tel1 || '', c2vinculo: u.c2vinculo || '',
+    c3nombre: u.c3nombre || '', c3apellido: u.c3apellido || '', c3tel1: u.c3tel1 || '', c3vinculo: u.c3vinculo || '',
+    c4nombre: u.c4nombre || '', c4apellido: u.c4apellido || '', c4tel1: u.c4tel1 || '', c4vinculo: u.c4vinculo || '',
+  }).toString();
+
+  const callbackName = 'sosCallback_' + Date.now();
+  window[callbackName] = function() {
+    delete window[callbackName];
+    const s = document.getElementById('jsonp-sos');
+    if (s) s.remove();
+    mostrarConfirmado();
+  };
+
+  const script = document.createElement('script');
+  script.id = 'jsonp-sos';
+  script.src = SHEETS_URL + '?' + params + '&callback=' + callbackName;
+  script.onerror = function() { mostrarConfirmado(); };
+  document.body.appendChild(script);
+
+  // Timeout de seguridad
+  setTimeout(() => { mostrarConfirmado(); }, 6000);
+}
+
+function mostrarConfirmado() {
+  document.getElementById('sos-sending').classList.remove('show');
+  document.getElementById('sos-confirmed').classList.add('show');
+}
+
+function sosCancelar() {
+  document.getElementById('sos-confirmed').classList.remove('show');
+  const saved = localStorage.getItem(SOS_USER_KEY);
+  if (saved) mostrarSOSMain(JSON.parse(saved));
+}
+
 renderDashboard();
 </script>
+
+<!-- ============================================================ -->
+<!--  SOS                                                         -->
+<!-- ============================================================ -->
+<div class="view" id="view-sos">
+
+  <!-- LOGIN (cuando no hay usuario recordado) -->
+  <div class="sos-login" id="sos-login">
+    <div style="font-size:52px;margin-bottom:16px">🆘</div>
+    <h2>Identificate para continuar</h2>
+    <p>Ingresá tu número de cédula para acceder al botón SOS</p>
+    <input type="text" id="sos-cedula-input" placeholder="ej. 1.234.567-8" maxlength="12">
+    <div class="sos-login-error" id="sos-login-error">No encontramos esa cédula en el sistema</div>
+    <button class="sos-login-btn" onclick="sosLogin()">Ingresar →</button>
+  </div>
+
+  <!-- PANTALLA SOS PRINCIPAL -->
+  <div class="sos-wrap" id="sos-main" style="display:none">
+    <div class="sos-user-bar">
+      <div class="su-icon">👤</div>
+      <div>
+        <div class="su-name" id="sos-user-name">—</div>
+        <div class="su-sub" id="sos-user-sub">—</div>
+      </div>
+      <span class="su-change" onclick="sosCerrarSesion()">Cambiar</span>
+    </div>
+
+    <div class="sos-btn-wrap">
+      <div class="sos-ring"></div>
+      <div class="sos-ring2"></div>
+      <button class="sos-btn" onclick="activarSOS()">
+        <span class="sb-icon">🆘</span>
+        <span class="sb-label">SOS</span>
+      </button>
+    </div>
+
+    <p class="sos-hint">Presioná el botón para alertar a la central</p>
+
+    <div class="sos-contacts">
+      <h4>Se notificará a</h4>
+      <div id="sos-contacts-list"></div>
+    </div>
+  </div>
+
+  <!-- ENVIANDO -->
+  <div class="sos-sending" id="sos-sending">
+    <div class="sos-spinner"></div>
+    <h2>Enviando alerta...</h2>
+    <p>Estamos notificando a la central<br>y a tus contactos de emergencia</p>
+  </div>
+
+  <!-- CONFIRMADO -->
+  <div class="sos-confirmed" id="sos-confirmed">
+    <div class="sc-icon">🚨</div>
+    <h2>¡Alerta enviada!</h2>
+    <p>La central de emergencias fue notificada.<br>Tus contactos recibirán el aviso.<br><br>Quedate tranquilo/a, la ayuda está en camino.</p>
+    <button class="sos-cancel" onclick="sosCancelar()">Volver al inicio</button>
+  </div>
+
+</div>
+
 </body>
 </html>
